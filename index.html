@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cool M3U8 Video Player</title>
+    <!-- Video.js CSS -->
+    <link href="https://vjs.zencdn.net/8.6.1/video-js.css" rel="stylesheet" />
+    <style>
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background: linear-gradient(135deg, #1e1e2f, #2a2a3e);
+            color: #fff;
+            overflow: hidden;
+        }
+        .player-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            padding: 20px;
+            animation: fadeIn 1s ease-in;
+        }
+        .video-js {
+            width: 80%;
+            max-width: 800px;
+            border-radius: 10px;
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.5);
+            background: #000;
+        }
+        .vjs-control-bar {
+            background: linear-gradient(to top, rgba(0,0,0,0.7), transparent);
+        }
+        .popup {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            animation: fadeIn 0.5s ease-in;
+        }
+        .popup-content {
+            background: #2a2a3e;
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+            max-width: 400px;
+            width: 90%;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+            animation: slideIn 0.5s ease-out;
+        }
+        .popup-content h2 {
+            margin: 0 0 15px;
+            color: #00ff88;
+        }
+        .popup-content p {
+            margin: 0 0 20px;
+            color: #ccc;
+        }
+        .popup-buttons button {
+            padding: 10px 20px;
+            margin: 0 10px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: transform 0.2s, background 0.3s;
+        }
+        .popup-buttons button:hover {
+            transform: scale(1.05);
+        }
+        .btn-ok {
+            background: #00ff88;
+            color: #000;
+        }
+        .btn-cancel {
+            background: #ff5555;
+            color: #fff;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        @keyframes slideIn {
+            from { transform: translateY(-50px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+    </style>
+</head>
+<body>
+    <!-- Popup -->
+    <div class="popup" id="welcomePopup">
+        <div class="popup-content">
+            <h2>Welcome to the Video Player!</h2>
+            <p>Join my Telegram channel for more awesome content!</p>
+            <div class="popup-buttons">
+                <button class="btn-ok" onclick="joinChannel()">OK</button>
+                <button class="btn-cancel" onclick="closePopup()">Cancel</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Video Player -->
+    <div class="player-container">
+        <video
+            id="my-video"
+            class="video-js vjs-default-skin"
+            controls
+            preload="auto"
+            width="640"
+            height="360"
+            data-setup='{"fluid": true}'
+        >
+            <source
+                src="https://bcovlive-a.akamaihd.net/b238876e5f004ec29d4e07066a044996/eu-west-1/4854911276001/profile_0/chunklist.m3u8"
+                type="application/x-mpegURL"
+            />
+            <p class="vjs-no-js">
+                To view this video, please enable JavaScript, and consider upgrading to a web browser that
+                <a href="https://videojs.com/html5-video-support/" target="_blank">supports HTML5 video</a>
+            </p>
+        </video>
+    </div>
+
+    <!-- Video.js Script -->
+    <script src="https://vjs.zencdn.net/8.6.1/video.min.js"></script>
+    <script>
+        // Popup functions
+        function joinChannel() {
+            window.location.href = 'https://t.me/IPTVM3Y';
+        }
+
+        function closePopup() {
+            document.getElementById('welcomePopup').style.display = 'none';
+        }
+
+        // Show popup on page load
+        window.onload = function() {
+            document.getElementById('welcomePopup').style.display = 'flex';
+        };
+    </script>
+</body>
+</html>
