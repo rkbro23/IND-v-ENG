@@ -1,0 +1,130 @@
+<!DOCTYPE html><html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Live Player</title>
+  <link href="https://vjs.zencdn.net/8.6.1/video-js.css" rel="stylesheet" />
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Poppins', sans-serif; }
+    body {
+      background: radial-gradient(circle at top, #0e0e1e, #1e1e2f);
+      color: white;
+      height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      overflow: hidden;
+      position: relative;
+    }
+    .video-js {
+      width: 90%;
+      max-width: 800px;
+      border-radius: 12px;
+      box-shadow: 0 0 25px rgba(0,255,128,0.4);
+    }
+    #loader {
+      position: absolute;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      background: rgba(0, 0, 0, 0.85);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      z-index: 10;
+      font-size: 24px;
+      font-weight: bold;
+      color: #00ff99;
+      animation: fadeIn 1s ease-in;
+    }
+    .popup {
+      position: fixed;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      background: rgba(0,0,0,0.8);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      z-index: 9999;
+    }
+    .popup-content {
+      background: #2a2a3e;
+      padding: 20px;
+      border-radius: 10px;
+      text-align: center;
+      color: white;
+      width: 90%;
+      max-width: 400px;
+      animation: slideIn 0.6s ease-out;
+    }
+    .popup-content h2 {
+      color: #00ff88;
+    }
+    .popup-buttons button {
+      margin: 10px;
+      padding: 10px 20px;
+      border: none;
+      border-radius: 5px;
+      font-weight: bold;
+      font-size: 16px;
+      cursor: pointer;
+      transition: transform 0.2s;
+    }
+    .popup-buttons button:hover { transform: scale(1.05); }
+    .ok { background: #00ff88; color: #000; }
+    .cancel { background: #ff5555; color: #fff; }
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+    @keyframes slideIn {
+      from { transform: translateY(-30px); opacity: 0; }
+      to { transform: translateY(0); opacity: 1; }
+    }
+  </style>
+</head>
+<body>
+  <div class="popup" id="welcomePopup">
+    <div class="popup-content">
+      <h2>Watch Live!</h2>
+      <p>Join our Telegram for free channels & updates!</p>
+      <div class="popup-buttons">
+        <button class="ok" onclick="joinChannel()">OK</button>
+        <button class="cancel" onclick="closePopup()">Cancel</button>
+      </div>
+    </div>
+  </div>  <div id="loader">Loading Stream...</div><video id="my-video" class="video-js vjs-default-skin" controls preload="auto" data-setup='{"fluid": true}'
+
+> 
+
+<source src="" type="application/x-mpegURL" />
+<p class="vjs-no-js">
+  Please enable JavaScript or upgrade your browser to watch this video.
+</p>
+
+  </video>  <script src="https://vjs.zencdn.net/8.6.1/video.min.js"></script>  <script>
+    const params = new URLSearchParams(window.location.search);
+    const url = params.get('url');
+    const player = videojs('my-video');
+    if (url) {
+      player.src({ src: url, type: 'application/x-mpegURL' });
+      player.ready(() => {
+        setTimeout(() => {
+          document.getElementById('loader').style.display = 'none';
+        }, 1500);
+      });
+    } else {
+      alert('No stream URL provided.');
+    }
+
+    // Popup
+    function joinChannel() {
+      window.location.href = 'https://t.me/IPTVM3Y';
+    }
+    function closePopup() {
+      document.getElementById('welcomePopup').style.display = 'none';
+    }
+    window.onload = () => {
+      document.getElementById('welcomePopup').style.display = 'flex';
+    }
+  </script></body>
+</html>
