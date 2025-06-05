@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Live Player</title>
+  <title>Beast Mode Player 👑</title>
   <link href="https://vjs.zencdn.net/8.6.1/video-js.css" rel="stylesheet" />
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet" />
   <style>
@@ -12,6 +12,7 @@
       --text-dark: #e0e0e0;
       --accent: #00ff99;
       --shadow: 0 4px 15px rgba(0, 255, 136, 0.3);
+      --error: #ff5555;
     }
     * {
       margin: 0;
@@ -31,19 +32,21 @@
     }
     .player-container {
       width: 90%;
-      max-width: 900px;
+      max-width: 1000px;
       position: relative;
+      padding: 20px;
     }
     .channel-info {
-      font-size: 1.8rem;
-      font-weight: 600;
+      font-size: 2rem;
+      font-weight: 700;
       color: var(--accent);
       margin-bottom: 15px;
       text-align: center;
       animation: fadeIn 0.5s ease-in;
+      text-shadow: 0 0 10px var(--accent);
     }
     .channel-info .quality {
-      font-size: 1.2rem;
+      font-size: 1.3rem;
       color: #ccc;
       margin-left: 10px;
     }
@@ -52,6 +55,7 @@
       border-radius: 12px;
       box-shadow: var(--shadow);
       transition: box-shadow 0.3s;
+      background: #000;
     }
     .video-js:hover {
       box-shadow: 0 8px 25px rgba(0, 255, 136, 0.5);
@@ -61,29 +65,56 @@
       top: 50%;
       left: 50%;
       transform: translate(-50%, -50%);
-      background: rgba(0, 0, 0, 0.85);
-      padding: 15px 25px;
-      border-radius: 8px;
-      font-size: 1.2rem;
+      background: rgba(0, 0, 0, 0.9);
+      padding: 15px 30px;
+      border-radius: 10px;
+      font-size: 1.3rem;
       font-weight: 600;
       color: var(--accent);
       z-index: 10;
-      animation: statusFade 0.5s ease-in-out;
+      animation: statusPulse 0.5s ease-in-out;
       display: none;
+      box-shadow: 0 0 15px rgba(0, 255, 136, 0.5);
+    }
+    #status.error {
+      color: var(--error);
+      background: rgba(255, 85, 85, 0.2);
+    }
+    .controls {
+      margin-top: 15px;
+      display: flex;
+      justify-content: center;
+      gap: 10px;
+    }
+    .control-btn {
+      padding: 10px 20px;
+      border: none;
+      border-radius: 8px;
+      background: var(--accent);
+      color: #000;
+      font-size: 1rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: transform 0.2s, background 0.2s;
+    }
+    .control-btn:hover {
+      transform: scale(1.05);
+      background: #00cc88;
     }
     /* Responsive Design */
     @media (max-width: 768px) {
       .player-container {
         width: 95%;
+        padding: 10px;
       }
       .channel-info {
-        font-size: 1.5rem;
+        font-size: 1.6rem;
       }
       .channel-info .quality {
-        font-size: 1rem;
+        font-size: 1.1rem;
       }
       #status {
-        font-size: 1rem;
+        font-size: 1.1rem;
         padding: 10px 20px;
       }
     }
@@ -92,9 +123,13 @@
         width: 100%;
       }
       .channel-info {
-        font-size: 1.2rem;
+        font-size: 1.3rem;
       }
       .channel-info .quality {
+        font-size: 0.9rem;
+      }
+      .control-btn {
+        padding: 8px 15px;
         font-size: 0.9rem;
       }
     }
@@ -103,7 +138,7 @@
       from { opacity: 0; transform: translateY(10px); }
       to { opacity: 1; transform: translateY(0); }
     }
-    @keyframes statusFade {
+    @keyframes statusPulse {
       from { opacity: 0; transform: scale(0.8); }
       to { opacity: 1; transform: scale(1); }
     }
@@ -115,49 +150,105 @@
       <span id="channelName">Loading Channel...</span>
       <span id="channelQuality" class="quality"></span>
     </div>
-    <video id="my-video" class="video-js vjs-default-skin" controls preload="auto" data-setup='{"fluid": true}'>
+    <video id="my-video" class="video-js vjs-default-skin vjs-big-play-centered" controls preload="auto" data-setup='{"fluid": true}'>
       <source src="" type="application/x-mpegURL" />
       <p class="vjs-no-js">Please enable JavaScript or upgrade your browser to watch this video.</p>
     </video>
     <div id="status">Loading Stream...</div>
+    <div class="controls">
+      <button class="control-btn" onclick="retryStream()">Retry Stream</button>
+      <button class="control-btn" onclick="switchMethod()">Switch Method</button>
+    </div>
   </div>
   <script src="https://vjs.zencdn.net/8.6.1/video.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/videojs-contrib-quality-levels@4.1.0/dist/videojs-contrib-quality-levels.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/videojs-http-source-selector@1.1.6/dist/videojs-http-source-selector.min.js"></script>
   <script>
+    // Initialize Video.js player
+    const player = videojs('my-video', {
+      html5: {
+        hls: {
+          overrideNative: true,
+          withCredentials: true
+        }
+      }
+    });
+
+    // Get URL parameters
     const params = new URLSearchParams(window.location.search);
     const url = params.get('url');
     const channelName = params.get('name') ? decodeURIComponent(params.get('name')) : 'Unknown Channel';
     const channelQuality = params.get('quality') ? decodeURIComponent(params.get('quality')) : '';
-    const player = videojs('my-video');
     const statusDiv = document.getElementById('status');
     const channelNameDiv = document.getElementById('channelName');
     const channelQualityDiv = document.getElementById('channelQuality');
 
-    // Set channel name and quality
+    // Set channel info
     channelNameDiv.textContent = channelName;
     channelQualityDiv.textContent = channelQuality !== 'Unknown' && channelQuality ? `(${channelQuality})` : '';
 
-    // CORS proxy (replace with your own if needed)
-    const corsProxy = 'https://cors-anywhere.herokuapp.com/';
+    // Stream configuration
+    const corsProxy = 'https://corsproxy.io/?'; // Replace with your own proxy if needed
     const userAgent = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36';
     const referer = 'https://allinonereborn.com';
-
-    if (url) {
-      player.src({
+    let currentMethod = 0;
+    const playbackMethods = [
+      {
+        name: 'Video.js HLS',
         src: corsProxy + url,
         type: 'application/x-mpegURL',
-        // Add custom headers
+        headers: { 'User-Agent': userAgent, 'Referer': referer }
+      },
+      {
+        name: 'Native HTML5',
+        src: url,
+        type: getStreamType(url),
+        headers: {}
+      },
+      {
+        name: 'Proxy with Custom Headers',
+        src: corsProxy + url,
+        type: getStreamType(url),
         headers: {
           'User-Agent': userAgent,
-          'Referer': referer
+          'Referer': referer,
+          'Origin': 'https://allinonereborn.com'
         }
+      }
+    ];
+
+    // Detect stream type based on URL
+    function getStreamType(url) {
+      if (url.endsWith('.m3u8')) return 'application/x-mpegURL';
+      if (url.endsWith('.mp4')) return 'video/mp4';
+      if (url.endsWith('.webm')) return 'video/webm';
+      if (url.includes('rtmp://')) return 'application/x-rtmp';
+      return 'video/mp4'; // Fallback
+    }
+
+    // Initialize quality selector
+    player.httpSourceSelector();
+
+    // Load stream with current method
+    function loadStream(methodIndex) {
+      const method = playbackMethods[methodIndex];
+      statusDiv.textContent = `Trying ${method.name}...`;
+      statusDiv.style.display = 'block';
+
+      player.src({
+        src: method.src,
+        type: method.type,
+        headers: method.headers
       });
 
       player.ready(() => {
-        statusDiv.textContent = 'Loading Stream...';
-        statusDiv.style.display = 'block';
+        player.play().catch(err => {
+          console.error('Playback error:', err);
+          handleError();
+        });
 
         player.on('loadedmetadata', () => {
-          statusDiv.textContent = 'Stream Loaded';
+          statusDiv.textContent = 'Stream Loaded!';
           setTimeout(() => {
             statusDiv.style.display = 'none';
           }, 1000);
@@ -175,14 +266,56 @@
           }, 1000);
         });
 
-        player.on('error', (e) => {
-          statusDiv.textContent = 'Error: Stream Failed. Check console for details.';
-          statusDiv.style.display = 'block';
+        player.on('error', () => {
           console.error('Video.js error:', player.error());
+          handleError();
         });
       });
+    }
+
+    // Handle errors with retry and method switching
+    let retryCount = 0;
+    const maxRetries = 3;
+    function handleError() {
+      if (retryCount < maxRetries) {
+        retryCount++;
+        statusDiv.textContent = `Error: Retrying (${retryCount}/${maxRetries})...`;
+        statusDiv.className = 'error';
+        setTimeout(() => loadStream(currentMethod), 2000);
+      } else {
+        retryCount = 0;
+        currentMethod = (currentMethod + 1) % playbackMethods.length;
+        statusDiv.textContent = `Error: Switching to ${playbackMethods[currentMethod].name}...`;
+        statusDiv.className = 'error';
+        setTimeout(() => loadStream(currentMethod), 2000);
+      }
+    }
+
+    // Retry stream
+    function retryStream() {
+      retryCount = 0;
+      statusDiv.textContent = 'Retrying Stream...';
+      statusDiv.className = '';
+      statusDiv.style.display = 'block';
+      loadStream(currentMethod);
+    }
+
+    // Switch playback method
+    function switchMethod() {
+      retryCount = 0;
+      currentMethod = (currentMethod + 1) % playbackMethods.length;
+      statusDiv.textContent = `Switching to ${playbackMethods[currentMethod].name}...`;
+      statusDiv.className = '';
+      statusDiv.style.display = 'block';
+      loadStream(currentMethod);
+    }
+
+    // Initialize stream
+    if (url) {
+      loadStream(currentMethod);
     } else {
-      statusDiv.textContent = 'Error: No Stream URL';
+      statusDiv.textContent = 'Error: No Stream URL Provided';
+      statusDiv.className = 'error';
       statusDiv.style.display = 'block';
     }
   </script>
