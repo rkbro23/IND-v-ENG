@@ -1,0 +1,176 @@
+<!DOCTYPE html><html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Live TV KIDZ</title>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --bg-light: #f9f9f9;
+      --bg-dark: radial-gradient(circle at top, #1f1f2f, #0e0e1e);
+      --text-light: #000;
+      --text-dark: #fff;
+      --accent: #00ff99;
+    }
+    * {
+      margin: 0; padding: 0;
+      box-sizing: border-box;
+      font-family: 'Poppins', sans-serif;
+    }
+    body {
+      background: var(--bg-dark);
+      color: var(--text-dark);
+      min-height: 100vh;
+      padding: 20px;
+      transition: background 0.5s, color 0.5s;
+    }
+    body.light {
+      background: var(--bg-light);
+      color: var(--text-light);
+    }
+    h1 {
+      text-align: center;
+      margin-bottom: 30px;
+      font-size: 2.5rem;
+      color: var(--accent);
+      animation: pulse 2s infinite;
+    }
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+      gap: 20px;
+      animation: fadeIn 1s ease-in;
+    }
+    .card {
+      background: #1a1a2f;
+      border-radius: 15px;
+      padding: 10px;
+      text-align: center;
+      cursor: pointer;
+      transition: transform 0.3s, box-shadow 0.3s;
+      box-shadow: 0 0 10px rgba(0, 255, 136, 0.3);
+    }
+    .card:hover {
+      transform: scale(1.05);
+      box-shadow: 0 0 25px rgba(0, 255, 136, 0.6);
+    }
+    .card img {
+      max-width: 100%;
+      height: 80px;
+      object-fit: contain;
+      margin-bottom: 10px;
+    }
+    .card span {
+      color: #00ffcc;
+      font-weight: 600;
+    }
+    .live-badge {
+      position: fixed;
+      left: 20px;
+      bottom: 20px;
+      background: red;
+      color: white;
+      padding: 8px 14px;
+      border-radius: 5px;
+      font-weight: bold;
+      animation: blink 1s infinite;
+      z-index: 9999;
+      box-shadow: 0 0 10px rgba(255,0,0,0.6);
+    }
+    .toggle-theme {
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      background: #00ff99;
+      color: #000;
+      border: none;
+      padding: 10px 15px;
+      border-radius: 5px;
+      font-weight: bold;
+      cursor: pointer;
+      box-shadow: 0 0 8px rgba(0, 255, 136, 0.4);
+      transition: background 0.3s;
+    }
+    .popup {
+      position: fixed;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      background: rgba(0,0,0,0.8);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      z-index: 9999;
+    }
+    .popup-content {
+      background: #1e1e2e;
+      padding: 20px;
+      border-radius: 10px;
+      text-align: center;
+      max-width: 400px;
+      width: 90%;
+      color: white;
+    }
+    .popup-buttons button {
+      padding: 10px 20px;
+      margin: 0 10px;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      font-size: 16px;
+    }
+    .ok { background: #00ff88; color: #000; }
+    .cancel { background: #ff5555; color: white; }
+    @keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0.4; } }
+    @keyframes fadeIn { from {opacity: 0; transform: translateY(30px);} to {opacity: 1; transform: translateY(0);} }
+    @keyframes pulse { 0% { text-shadow: 0 0 5px var(--accent); } 50% { text-shadow: 0 0 15px var(--accent); } 100% { text-shadow: 0 0 5px var(--accent); } }
+  </style>
+</head>
+<body>
+  <h1>KIDZ LIVE CHANNELS BY RK</h1>
+  <div class="grid" id="channelGrid"></div>
+  <div class="live-badge">LIVE</div>
+  <button class="toggle-theme" onclick="toggleTheme()">Toggle Theme</button>  <div class="popup" id="tgPopup">
+    <div class="popup-content">
+      <h2>Join Our Telegram</h2>
+      <p>Get latest updates and playlists!</p>
+      <div class="popup-buttons">
+        <button class="ok" onclick="joinTG()">Join</button>
+        <button class="cancel" onclick="closePopup()">Cancel</button>
+      </div>
+    </div>
+  </div>  <script>
+    const grid = document.getElementById('channelGrid');
+
+    fetch('channels.json')
+      .then(res => res.json())
+      .then(data => {
+        data.forEach(channel => {
+          const card = document.createElement('div');
+          card.className = 'card';
+          card.innerHTML = `<img src="${channel.logo}" alt="${channel.name}" /><span>${channel.name}</span>`;
+          card.onclick = () => {
+            const streamUrl = channel.url || channel.m3u8;
+            if (streamUrl) window.location.href = `player.html?url=${encodeURIComponent(streamUrl)}`;
+          };
+          grid.appendChild(card);
+        });
+      })
+      .catch(err => {
+        grid.innerHTML = '<p style="color:red;">Failed to load channels.json</p>';
+        console.error(err);
+      });
+
+    function toggleTheme() {
+      document.body.classList.toggle('light');
+    }
+    function joinTG() {
+      window.location.href = 'https://t.me/IPTVM3Y';
+    }
+    function closePopup() {
+      document.getElementById('tgPopup').style.display = 'none';
+    }
+    window.onload = () => {
+      document.getElementById('tgPopup').style.display = 'flex';
+    }
+  </script></body>
+</html>
