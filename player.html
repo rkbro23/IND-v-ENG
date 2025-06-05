@@ -8,7 +8,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet" />
   <style>
     :root {
-      --bg-dark: radial-gradient(circle at top, #1a1a2e, #0e0e1e);
+      --bg-dark: radial-gradient(circle at top, #1a1a2e, #0e0e1e 100%);
       --text-dark: #e0e0e0;
       --accent: #00ff99;
       --shadow: 0 4px 15px rgba(0, 255, 136, 0.3);
@@ -85,6 +85,7 @@
       display: flex;
       justify-content: center;
       gap: 10px;
+      flex-wrap: wrap;
     }
     .control-btn {
       padding: 10px 20px;
@@ -158,6 +159,7 @@
     <div class="controls">
       <button class="control-btn" onclick="retryStream()">Retry Stream</button>
       <button class="control-btn" onclick="switchMethod()">Switch Method</button>
+      <button class="control-btn" onclick="toggleFullscreen()">Toggle Fullscreen</button>
     </div>
   </div>
   <script src="https://vjs.zencdn.net/8.6.1/video.min.js"></script>
@@ -188,37 +190,39 @@
     channelQualityDiv.textContent = channelQuality !== 'Unknown' && channelQuality ? `(${channelQuality})` : '';
 
     // Stream configuration
-    const corsProxy = 'https://corsproxy.io/?'; // Replace with your own proxy if needed
+    const corsProxy = 'https://proxy-js.onrender.com/'; // Updated proxy URL
     const userAgent = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36';
     const referer = 'https://allinonereborn.com';
     let currentMethod = 0;
     const playbackMethods = [
       {
         name: 'Video.js HLS',
-        src: corsProxy + url,
+        src: url ? corsProxy + encodeURIComponent(url) : '',
         type: 'application/x-mpegURL',
         headers: { 'User-Agent': userAgent, 'Referer': referer }
       },
       {
         name: 'Native HTML5',
-        src: url,
+        src: url || '',
         type: getStreamType(url),
         headers: {}
       },
       {
         name: 'Proxy with Custom Headers',
-        src: corsProxy + url,
+        src: url ? corsProxy + encodeURIComponent(url) : '',
         type: getStreamType(url),
         headers: {
           'User-Agent': userAgent,
           'Referer': referer,
-          'Origin': 'https://allinonereborn.com'
+          'Origin': 'https://allinonereborn.com',
+          'X-Requested-With': 'XMLHttpRequest'
         }
       }
     ];
 
-    // Detect stream type based on URL
+    // Detect stream type
     function getStreamType(url) {
+      if (!url) return 'video/mp4';
       if (url.endsWith('.m3u8')) return 'application/x-mpegURL';
       if (url.endsWith('.mp4')) return 'video/mp4';
       if (url.endsWith('.webm')) return 'video/webm';
@@ -232,8 +236,16 @@
     // Load stream with current method
     function loadStream(methodIndex) {
       const method = playbackMethods[methodIndex];
+      if (!method.src) {
+        statusDiv.textContent = 'Error: Invalid Stream URL';
+        statusDiv.className = 'error';
+        statusDiv.style.display = 'block';
+        return;
+      }
+
       statusDiv.textContent = `Trying ${method.name}...`;
       statusDiv.style.display = 'block';
+      statusDiv.className = '';
 
       player.src({
         src: method.src,
@@ -248,7 +260,7 @@
         });
 
         player.on('loadedmetadata', () => {
-          statusDiv.textContent = 'Stream Loaded!';
+          statusDiv.textContent = 'Stream Loaded! 👑';
           setTimeout(() => {
             statusDiv.style.display = 'none';
           }, 1000);
@@ -308,6 +320,15 @@
       statusDiv.className = '';
       statusDiv.style.display = 'block';
       loadStream(currentMethod);
+    }
+
+    // Toggle fullscreen
+    function toggleFullscreen() {
+      if (!document.fullscreenElement) {
+        player.requestFullscreen();
+      } else {
+        document.exitFullscreen();
+      }
     }
 
     // Initialize stream
