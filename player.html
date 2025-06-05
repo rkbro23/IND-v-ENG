@@ -136,8 +136,22 @@
     channelNameDiv.textContent = channelName;
     channelQualityDiv.textContent = channelQuality !== 'Unknown' && channelQuality ? `(${channelQuality})` : '';
 
+    // CORS proxy (replace with your own if needed)
+    const corsProxy = 'https://cors-anywhere.herokuapp.com/';
+    const userAgent = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36';
+    const referer = 'https://allinonereborn.com';
+
     if (url) {
-      player.src({ src: url, type: 'application/x-mpegURL' });
+      player.src({
+        src: corsProxy + url,
+        type: 'application/x-mpegURL',
+        // Add custom headers
+        headers: {
+          'User-Agent': userAgent,
+          'Referer': referer
+        }
+      });
+
       player.ready(() => {
         statusDiv.textContent = 'Loading Stream...';
         statusDiv.style.display = 'block';
@@ -162,7 +176,7 @@
         });
 
         player.on('error', (e) => {
-          statusDiv.textContent = 'Error: Stream Failed';
+          statusDiv.textContent = 'Error: Stream Failed. Check console for details.';
           statusDiv.style.display = 'block';
           console.error('Video.js error:', player.error());
         });
