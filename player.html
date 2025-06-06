@@ -1,205 +1,82 @@
-<!-- ✅ Cleaned, Improved, and Proxy Integrated Player -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Beast Mode Player 👑</title>
+  <title>🔴 Live Stream</title>
   <link href="https://vjs.zencdn.net/8.6.1/video-js.css" rel="stylesheet" />
-  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet"/>
   <style>
-    :root {
-      --bg-dark: linear-gradient(to bottom, #0f0f1e, #1a1a2e);
-      --text-dark: #e0e0e0;
-      --accent: #00ffcc;
-      --shadow: 0 4px 20px rgba(0, 255, 204, 0.3);
-      --error: #ff5555;
-    }
-    * {
-      margin: 0; padding: 0; box-sizing: border-box;
-      font-family: 'Poppins', sans-serif;
-    }
     body {
-      background: var(--bg-dark);
-      color: var(--text-dark);
-      display: flex; align-items: center; justify-content: center;
+      margin: 0;
+      background-color: black;
+      font-family: Arial, sans-serif;
+      display: flex;
       flex-direction: column;
-      min-height: 100vh;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
       overflow: hidden;
     }
-    .player-container {
-      width: 90%;
-      max-width: 1000px;
-      padding: 20px;
-      position: relative;
-      animation: fadeIn 1s ease-in-out;
-    }
-    .channel-info {
-      text-align: center;
-      font-size: 1.8rem;
-      font-weight: bold;
+
+    h1 {
+      color: #00ffee;
       margin-bottom: 10px;
-      color: var(--accent);
-      text-shadow: 0 0 10px var(--accent);
+      font-size: 20px;
+      text-align: center;
     }
+
     .video-js {
-      width: 100%;
-      border-radius: 15px;
-      background: #000;
-      box-shadow: var(--shadow);
-      transition: box-shadow 0.3s ease;
+      width: 95vw;
+      max-width: 1000px;
+      border-radius: 12px;
+      box-shadow: 0 0 20px rgba(0,255,255,0.2);
     }
-    .video-js:hover {
-      box-shadow: 0 8px 28px rgba(0, 255, 204, 0.5);
-    }
-    .controls {
-      margin-top: 15px;
-      display: flex;
-      justify-content: center;
-      flex-wrap: wrap;
-      gap: 12px;
-    }
-    .control-btn {
-      padding: 10px 20px;
-      background: var(--accent);
-      border: none;
-      border-radius: 8px;
-      font-weight: bold;
-      cursor: pointer;
-      transition: all 0.2s ease;
-      color: #000;
-    }
-    .control-btn:hover {
-      background: #00ccaa;
-      transform: scale(1.05);
-    }
-    #status {
-      position: absolute;
-      top: 50%; left: 50%;
-      transform: translate(-50%, -50%);
-      background: rgba(0, 0, 0, 0.85);
-      padding: 15px 25px;
-      border-radius: 10px;
-      font-size: 1.2rem;
-      font-weight: 600;
-      color: var(--accent);
-      box-shadow: 0 0 15px rgba(0, 255, 204, 0.5);
-      z-index: 99;
-      display: none;
-    }
-    #status.error {
-      background: rgba(255, 50, 50, 0.8);
-      color: white;
-    }
-    @keyframes fadeIn {
-      0% {opacity: 0; transform: translateY(10px);}
-      100% {opacity: 1; transform: translateY(0);}
+
+    #loading {
+      color: #0f0;
+      margin-top: 10px;
+      font-size: 16px;
     }
   </style>
 </head>
 <body>
-  <div class="player-container">
-    <div class="channel-info" id="channelInfo">
-      <span id="channelName">Loading...</span>
-    </div>
-
-    <video id="my-video" class="video-js vjs-default-skin vjs-big-play-centered" controls preload="auto" data-setup='{"fluid": true}'>
-      <source src="" type="application/x-mpegURL"/>
-    </video>
-
-    <div id="status">Loading Stream...</div>
-
-    <div class="controls">
-      <button class="control-btn" onclick="retryStream()">🔁 Retry</button>
-      <button class="control-btn" onclick="switchMethod()">🔄 Method</button>
-      <button class="control-btn" onclick="toggleFullscreen()">⛶ Fullscreen</button>
-    </div>
-  </div>
+  <h1 id="stream-title">Loading...</h1>
+  <video id="my-player" class="video-js vjs-default-skin vjs-big-play-centered" controls preload="auto" data-setup='{}'>
+    <source src="" type="application/x-mpegURL" />
+  </video>
+  <div id="loading">Please wait, loading stream...</div>
 
   <script src="https://vjs.zencdn.net/8.6.1/video.min.js"></script>
-
   <script>
-    const player = videojs('my-video');
-    const statusDiv = document.getElementById('status');
     const params = new URLSearchParams(location.search);
-    const streamUrl = params.get('url');
-    const name = decodeURIComponent(params.get('name') || 'Live Stream');
-    document.getElementById('channelName').innerText = name;
+    const rawURL = params.get("url");
+    const title = params.get("name") || "Live TV";
 
-    const proxy = 'https://proxy-js.onrender.com/';
-    let currentMethod = 0;
+    document.getElementById("stream-title").innerText = decodeURIComponent(title);
 
-    const methods = [
-      () => proxy + encodeURIComponent(streamUrl),
-      () => streamUrl,
-    ];
+    const proxy = "https://proxy-js.onrender.com/";
+    const fullURL = proxy + rawURL;
 
-    function load(methodIndex = 0) {
-      const src = methods[methodIndex]();
-      if (!src) return showError("Invalid URL");
+    const player = videojs("my-player");
+    player.src({ type: "application/x-mpegURL", src: fullURL });
 
-      statusDiv.className = ''; statusDiv.innerText = "Loading..."; statusDiv.style.display = "block";
-
-      player.src({ src, type: 'application/x-mpegURL' });
-      player.play().catch(() => handleError());
-      
-      player.on('loadedmetadata', () => {
-        statusDiv.innerText = "✅ Loaded!";
-        setTimeout(() => statusDiv.style.display = "none", 1500);
+    player.ready(() => {
+      player.play().catch(() => {
+        document.getElementById("loading").innerText = "Tap Play to Start";
       });
-      player.on('error', () => handleError());
-    }
+    });
 
-    let retryCount = 0;
-    function handleError() {
-      retryCount++;
-      if (retryCount < 3) {
-        statusDiv.innerText = `Retrying (${retryCount})...`;
-        statusDiv.className = "error";
-        setTimeout(() => load(currentMethod), 1500);
-      } else {
-        currentMethod = (currentMethod + 1) % methods.length;
-        retryCount = 0;
-        statusDiv.innerText = `Switching method...`;
-        statusDiv.className = "error";
-        setTimeout(() => load(currentMethod), 1500);
-      }
-    }
+    player.on("loadedmetadata", () => {
+      document.getElementById("loading").innerText = "✅ Stream Loaded";
+      setTimeout(() => {
+        document.getElementById("loading").style.display = "none";
+      }, 2000);
+    });
 
-    function retryStream() {
-      retryCount = 0;
-      statusDiv.innerText = "🔄 Retrying...";
-      statusDiv.style.display = "block";
-      load(currentMethod);
-    }
-
-    function switchMethod() {
-      currentMethod = (currentMethod + 1) % methods.length;
-      retryCount = 0;
-      statusDiv.innerText = "⏩ Switching method...";
-      statusDiv.style.display = "block";
-      load(currentMethod);
-    }
-
-    function toggleFullscreen() {
-      if (!document.fullscreenElement) {
-        player.requestFullscreen();
-      } else {
-        document.exitFullscreen();
-      }
-    }
-
-    function showError(msg) {
-      statusDiv.innerText = msg;
-      statusDiv.className = "error";
-      statusDiv.style.display = "block";
-    }
-
-    if (streamUrl) {
-      load(currentMethod);
-    } else {
-      showError("❌ No URL Provided");
-    }
+    player.on("error", () => {
+      document.getElementById("loading").innerText = "❌ Failed to Load Stream";
+      document.getElementById("loading").style.color = "red";
+    });
   </script>
 </body>
 </html>
